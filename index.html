@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>AI Music Cypher | Player</title>
+    
+    <!-- Mobile App Settings -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CypherPlayer">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Syncopate:wght@700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Background Animation -->
+        <div class="mesh-gradient"></div>
+        <div class="overlay"></div>
+
+        <!-- Header -->
+        <header>
+            <div class="logo">AI Music <span>Cypher</span></div>
+            <div class="status-badge">Live Now</div>
+        </header>
+
+        <!-- Main Player -->
+        <main class="player-view">
+            <div class="album-art-container">
+                <div class="album-art" id="albumArt">
+                    <div class="visualizer-bars" id="visualizer">
+                        <!-- Dynamic bars -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="track-info">
+                <h1 id="currentTitle">Select a track</h1>
+                <p id="currentArtist">Ready to vibe</p>
+            </div>
+
+            <div class="player-controls">
+                <div class="progress-area">
+                    <div class="time-info">
+                        <span id="currentTime">0:00</span>
+                        <span id="duration">0:00</span>
+                    </div>
+                    <div class="progress-bar" id="progressContainer">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+
+                <div class="buttons">
+                    <button id="prevBtn" class="btn-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+                    </button>
+                    <button id="playBtn" class="btn-main">
+                        <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                        <svg id="pauseIcon" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                    </button>
+                    <button id="nextBtn" class="btn-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Playlist Drawer -->
+        <section class="playlist-section">
+            <div class="drawer-handle"></div>
+            <div class="playlist-header">
+                <h2>Playlist</h2>
+                <span class="track-count" id="trackCount">0 tracks</span>
+            </div>
+            <div class="track-list" id="trackList">
+                <!-- Tracks will be rendered here -->
+            </div>
+        </section>
+    </div>
+
+    <!-- Hidden Audio Element -->
+    <audio id="audioElement"></audio>
+
+    <script src="app.js"></script>
+</body>
+</html>
