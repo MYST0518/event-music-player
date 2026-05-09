@@ -62,26 +62,40 @@ function loadTrack(idx) {
     });
 }
 
+function playTrack(idx) {
+    currentIdx = idx;
+    loadTrack(idx);
+    audio.play().then(() => {
+        isPlaying = true;
+        playIcon.style.display = 'none';
+        pauseIcon.style.display = 'block';
+        visualizer.classList.add('active');
+        animateVisualizer();
+    }).catch(e => {
+        console.log("Auto-play blocked or failed:", e);
+        isPlaying = false;
+        playIcon.style.display = 'block';
+        pauseIcon.style.display = 'none';
+        visualizer.classList.remove('active');
+    });
+}
+
 function togglePlay() {
     if (isPlaying) {
         audio.pause();
         playIcon.style.display = 'block';
         pauseIcon.style.display = 'none';
         visualizer.classList.remove('active');
+        isPlaying = false;
     } else {
-        audio.play().catch(e => console.log("Play failed:", e));
-        playIcon.style.display = 'none';
-        pauseIcon.style.display = 'block';
-        visualizer.classList.add('active');
+        audio.play().then(() => {
+            playIcon.style.display = 'none';
+            pauseIcon.style.display = 'block';
+            visualizer.classList.add('active');
+            animateVisualizer();
+            isPlaying = true;
+        }).catch(e => console.log("Play failed:", e));
     }
-    isPlaying = !isPlaying;
-}
-
-function playTrack(idx) {
-    currentIdx = idx;
-    loadTrack(idx);
-    isPlaying = false;
-    togglePlay();
 }
 
 function nextTrack() {
