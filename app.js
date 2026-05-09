@@ -28,7 +28,6 @@ const durationEl = document.getElementById('duration');
 const trackList = document.getElementById('trackList');
 const trackCount = document.getElementById('trackCount');
 const playlistSection = document.querySelector('.playlist-section');
-const visualizer = document.getElementById('visualizer');
 
 // --- State ---
 let currentIdx = 0;
@@ -38,22 +37,25 @@ let isPlaying = false;
 function init() {
     renderTrackList();
     loadTrack(0);
-    createVisualizer();
     
-    trackCount.innerText = `${tracks.length} tracks`;
+    if (trackCount) trackCount.innerText = `${tracks.length} tracks`;
 
     // Drawer Toggle
-    document.querySelector('.drawer-handle').addEventListener('click', () => {
-        playlistSection.classList.toggle('active');
-    });
+    const handle = document.querySelector('.drawer-handle');
+    if (handle) {
+        handle.addEventListener('click', () => {
+            playlistSection.classList.toggle('active');
+        });
+    }
 }
 
 // --- Player Functions ---
 function loadTrack(idx) {
     const track = tracks[idx];
-    currentTitle.innerText = track.title;
-    currentArtist.innerText = track.artist;
+    if (currentTitle) currentTitle.innerText = track.title;
+    if (currentArtist) currentArtist.innerText = track.artist;
     audio.src = track.file;
+    audio.load(); // iOSでの再生を安定させるために明示的に呼び出し
     
     // Update Active UI in List
     const items = document.querySelectorAll('.track-item');
@@ -62,108 +64,91 @@ function loadTrack(idx) {
     });
 }
 
+function togglePlay() {
+    if (isPlaying) {
+        pauseTrack();
+    } else {
+        playTrack();
+    }
+}
+
 function playTrack(idx) {
-    currentIdx = idx;
-    loadTrack(idx);
+    if (idx !== undefined && idx !== currentIdx) {
+        currentIdx = idx;
+        loadTrack(currentIdx);
+    }
+    
     audio.play().then(() => {
         isPlaying = true;
-        playIcon.style.display = 'none';
-        pauseIcon.style.display = 'block';
-        visualizer.classList.add('active');
-        animateVisualizer();
-    }).catch(e => {
-        console.log("Auto-play blocked or failed:", e);
-        isPlaying = false;
-        playIcon.style.display = 'block';
-        pauseIcon.style.display = 'none';
-        visualizer.classList.remove('active');
+        if (playIcon) playIcon.style.display = 'none';
+        if (pauseIcon) pauseIcon.style.display = 'block';
+    }).catch(err => {
+        console.error("Playback failed:", err);
     });
 }
 
-function togglePlay() {
-    if (isPlaying) {
-        audio.pause();
-        playIcon.style.display = 'block';
-        pauseIcon.style.display = 'none';
-        visualizer.classList.remove('active');
-        isPlaying = false;
-    } else {
-        audio.play().then(() => {
-            playIcon.style.display = 'none';
-            pauseIcon.style.display = 'block';
-            visualizer.classList.add('active');
-            animateVisualizer();
-            isPlaying = true;
-        }).catch(e => console.log("Play failed:", e));
-    }
+function pauseTrack() {
+    audio.pause();
+    isPlaying = false;
+    if (playIcon) playIcon.style.display = 'block';
+    if (pauseIcon) pauseIcon.style.display = 'none';
 }
 
 function nextTrack() {
     currentIdx = (currentIdx + 1) % tracks.length;
-    playTrack(currentIdx);
+    loadTrack(currentIdx);
+    playTrack();
 }
 
 function prevTrack() {
     currentIdx = (currentIdx - 1 + tracks.length) % tracks.length;
-    playTrack(currentIdx);
-}
-
-// --- Visualizer ---
-function createVisualizer() {
-    const barCount = 12;
-    for (let i = 0; i < barCount; i++) {
-        const bar = document.createElement('div');
-        bar.className = 'bar';
-        visualizer.appendChild(bar);
-    }
-}
-
-function animateVisualizer() {
-    if (!isPlaying) return;
-    const bars = document.querySelectorAll('.bar');
-    bars.forEach(bar => {
-        const h = Math.random() * 50 + 10;
-        bar.style.height = `${h}px`;
-    });
-    requestAnimationFrame(animateVisualizer);
+    loadTrack(currentIdx);
+    playTrack();
 }
 
 // --- Events ---
-playBtn.addEventListener('click', () => {
-    togglePlay();
-    if (isPlaying) animateVisualizer();
-});
-nextBtn.addEventListener('click', nextTrack);
-prevBtn.addEventListener('click', prevTrack);
+if (playBtn) {
+    playBtn.addEventListener('click', togglePlay);
+}
+if (nextBtn) {
+    nextBtn.addEventListener('click', nextTrack);
+}
+if (prevBtn) {
+    prevBtn.addEventListener('click', prevTrack);
+}
 
 audio.addEventListener('timeupdate', () => {
     const { duration, currentTime } = audio;
     if (isNaN(duration)) return;
     
     const progressPercent = (currentTime / duration) * 100;
-    progressFill.style.width = `${progressPercent}%`;
+    if (progressFill) progressFill.style.width = `${progressPercent}%`;
 
-    // Time Label
     const format = (time) => {
         const min = Math.floor(time / 60);
         const sec = Math.floor(time % 60);
         return `${min}:${sec < 10 ? '0' + sec : sec}`;
     };
-    currentTimeEl.innerText = format(currentTime);
-    durationEl.innerText = format(duration);
+    if (currentTimeEl) currentTimeEl.innerText = format(currentTime);
+    if (durationEl) durationEl.innerText = format(duration);
 });
 
-progressContainer.addEventListener('click', (e) => {
-    const width = progressContainer.clientWidth;
-    const clickX = e.offsetX;
-    const duration = audio.duration;
-    audio.currentTime = (clickX / width) * duration;
-});
+if (progressContainer) {
+    progressContainer.addEventListener('click', (e) => {
+        const width = progressContainer.clientWidth;
+        const clickX = e.offsetX;
+        const duration = audio.duration;
+        if (!isNaN(duration)) {
+            audio.currentTime = (clickX / width) * duration;
+        }
+    });
+}
 
 audio.addEventListener('ended', nextTrack);
 
 // --- Render List ---
 function renderTrackList() {
+    if (!trackList) return;
     trackList.innerHTML = tracks.map((track, i) => `
         <div class="track-item" onclick="playTrack(${i})">
             <span class="track-idx">${i + 1}</span>
@@ -175,4 +160,5 @@ function renderTrackList() {
     `).join('');
 }
 
+// Start
 init();
